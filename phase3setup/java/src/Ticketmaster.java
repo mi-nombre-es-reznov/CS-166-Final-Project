@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
 import java.math.BigInteger; 
 import java.nio.charset.StandardCharsets; 
 import java.security.MessageDigest; 
@@ -36,8 +35,34 @@ import java.security.NoSuchAlgorithmException;
 
 
 
+/*
+ * String character counter for verification
+ */
+class CountCharacter    
+{    
+    public static boolean cnt_str(String val, int max) {    
+        int count = 0;    
+            
+        //Counts each character except space    
+        for(int i = 0; i < val.length(); i++) {    
+            if(val.charAt(i) != ' ')    
+                count++;    
+        }    
+            
+        //Displays the total number of characters present in the given string    
+        //System.out.println("Total number of characters in a string: " + count);
 
-
+		// Check for validity
+		if(count <= max)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+    }    
+}    
 
 
 /*
@@ -80,8 +105,8 @@ class GFG {
 
 		try
 		{ 
-			System.out.println("\n" + input + " : " + toHexString(getSHA(input))); // Password hash
-			System.out.println("\n" + verif + " : " + toHexString(getSHA(verif))); // Verify password
+			//System.out.println("\n" + input + " : " + toHexString(getSHA(input))); // Password hash
+			//System.out.println("\n" + verif + " : " + toHexString(getSHA(verif))); // Verify password
 			
 			// Compare and return
 			if(new String(toHexString(getSHA(input))).equals(toHexString(getSHA(verif))))
@@ -103,55 +128,6 @@ class GFG {
 		return "mismatch";
 	} 
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -451,7 +427,9 @@ public class Ticketmaster{
 		long phone = 0;
 		boolean em_val = false;
 		boolean pn_val = false;
+		boolean char_limit = false;
 
+		CountCharacter b = new CountCharacter();	// Initialize class for counting string
 		
 		// Create space and initialize String
 		System.out.println("\n\n\n");
@@ -460,32 +438,61 @@ public class Ticketmaster{
 		// Space
 		System.out.println("\n\n");
 		
-		// Get user first name
-		System.out.print("Enter your first name: ");
-		fn = scan.nextLine();
-
+		while(char_limit == false)
+		{
+			// Get user first name
+			System.out.print("Enter your first name: ");
+			fn = scan.nextLine();
+			
+			char_limit = b.cnt_str(fn, 32);	// Test length
+		}
+		
+		char_limit = false;	// Prep for last name bound check
+		
 		// Get user last name
-		System.out.print("Enter your last name: ");
-		ln = scan.nextLine();
+		while(char_limit == false)
+		{
+			System.out.print("Enter your last name: ");
+			ln = scan.nextLine();
+		
+			char_limit = b.cnt_str(ln, 32);	// Test length
+		}
+		
+		char_limit = false;	// Prep for last name bound check
 
 		// Get user email
-		while(em_val == false)
+		while(em_val == false || char_limit == false)
 		{
 			System.out.print("Enter your email address: ");
 			email = scan.nextLine();
 			
 			// Test email
 			em_val = valEmail(email);
+			
+			char_limit = b.cnt_str(email, 64);	// Test length
 		}
 
 		// Get user phone number
 		while(pn_val == false)
 		{
 			System.out.print("Enter your phone number (no spaces or dashes): ");
-			phone = Long.parseLong(scan.nextLine());
+			String str_phone = scan.nextLine();
+			
+			// Try and catch no entry for phone number
+			if(str_phone == "")
+			{
+				str_phone = "0";
+			}
+			
+			phone = Long.parseLong(str_phone);	// Convert to number for parameter passing
 
 			// Test phone number - # of digits
 			pn_val = valPhone(phone);
+			
+			if(phone == 0)
+			{
+				System.out.println("User PHONE NUMBER has been skipped!");
+			}
 			
 			//System.out.println("Valid phone number: " + String.valueOf(pn_val));
 		}
@@ -523,6 +530,34 @@ public class Ticketmaster{
 		System.out.println("Inserting your phone number as: " + phone);
 		System.out.println("Inserting your (unencrypted version) password as: " + pwd);
 		System.out.println("Inserting your (encrypted version) password as: " + verif_pw_save);
+		
+		space();	// Space between the output and menu
+		
+		// Concatenate all data together into query format for writing new user to file
+		// -- SQL Statement for Insertion -- INSERT INTO Users {email, lname, fname, phone, pwd} VALUES (email, ln, fn, phone, verif_pw_save);
+		
+		String SQL_INSERT = ("INSERT INTO Users {email, lname, fname, phone, pwd} VALUES (" + email + "," + ln + "," + fn + "," + phone + "," + verif_pw_save + ");");
+		executeUpdate(SQL_INSERT); // Add new user.
+		
+		
+		
+		
+		
+		
+		
+		
+		//
+		
+		
+		
+		
+		
+		//
+		
+		
+		
+		
+		//
 	}
 	
 		
@@ -562,10 +597,17 @@ public class Ticketmaster{
 	{
 		for (int i = 0; i < 100; i++) 
 		{
-			System.out.println(" ");
+			System.out.println("");
 		}
 	}
 	
+	public static void space()
+	{
+		for(int i = 0; i < 20; i++)
+		{
+			System.out.println("");
+		}
+	}
 	
 	
 	
