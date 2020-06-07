@@ -102,6 +102,9 @@ class GFG {
 	public static String convert(String input, String verif) 
 	{ 
 		String ret_val = "";
+		String temp = "";
+		int count = 0;
+		int sub = 0;
 
 		try
 		{ 
@@ -112,6 +115,24 @@ class GFG {
 			if(new String(toHexString(getSHA(input))).equals(toHexString(getSHA(verif))))
 			{
 				ret_val = toHexString(getSHA(input));
+				            
+				//Counts each character except space    
+				for(int i = 0; i < ret_val.length(); i++) {    
+					if(ret_val.charAt(i) != ' ')    
+						count++;    
+				}  
+						
+				if(count < 64)
+				{
+					sub = (64 - count);	// Find range off from 64
+					
+					// concate random letters to make 64-chars string
+					for(int i = 0; i <= sub; i++)
+					{
+						ret_val += 'a';	// Add as many 'a's to make 64-chars
+					}
+				}
+						
 				return ret_val;
 			}
 			else
@@ -424,6 +445,7 @@ public class Ticketmaster{
 		String pwd = "";	// Password
 		String ver_pwd_str = "";        // Verify Password - string
 		String verif_pw_save = "mismatch";
+		String query = "";
 		long phone = 0;
 		boolean em_val = false;
 		boolean pn_val = false;
@@ -518,46 +540,36 @@ public class Ticketmaster{
 				System.out.print("\nPasswords DO NOT match!\n\n");
 			}
 		}
-		
-		// Space
-		clear();
 
-		// Display results
-		System.out.println("\n\n\n");
-		System.out.println("Inserting your first name as: " + fn);
-		System.out.println("Inserting your last name as: " + ln);
-		System.out.println("Inserting your email as: " + email);
-		System.out.println("Inserting your phone number as: " + phone);
-		System.out.println("Inserting your (unencrypted version) password as: " + pwd);
-		System.out.println("Inserting your (encrypted version) password as: " + verif_pw_save);
-		
-		space();	// Space between the output and menu
-		
 		// Concatenate all data together into query format for writing new user to file
 		// -- SQL Statement for Insertion -- INSERT INTO Users {email, lname, fname, phone, pwd} VALUES (email, ln, fn, phone, verif_pw_save);
-		
-		String SQL_INSERT = ("INSERT INTO Users {email, lname, fname, phone, pwd} VALUES (" + email + "," + ln + "," + fn + "," + phone + "," + verif_pw_save + ");");
-		executeUpdate(SQL_INSERT); // Add new user.
-		
-		
-		
-		
-		
-		
-		
-		
-		//
-		
-		
-		
-		
-		
-		//
-		
-		
-		
-		
-		//
+		try
+		{
+			query = "INSERT INTO Users (email, lname, fname, phone, pwd) VALUES ('" + email + "', '" + ln + "', '" + fn + "', '" + phone + "', '" + verif_pw_save + "'	);";
+			//executeUpdate(SQL_INSERT); // Add new user.
+			
+			esql.executeUpdate(query);		
+
+			// Space
+			clear();
+
+			// Success message
+			System.out.println("\n\nINSERT SUCESSFUL!");
+			
+			// Display results
+			System.out.println("\n\n\n");
+			System.out.println("Inserting your first name as: " + fn);
+			System.out.println("Inserting your last name as: " + ln);
+			System.out.println("Inserting your email as: " + email);
+			System.out.println("Inserting your phone number as: " + phone);
+			System.out.println("Inserting your (unencrypted version) password as: " + pwd);
+			System.out.println("Inserting your (encrypted version) password as: " + verif_pw_save);
+			
+			space();	// Space between the output and menu
+		}catch(Exception e)
+		{			
+			System.out.println("An error has occurred: " + e);
+		}
 	}
 	
 		
