@@ -869,7 +869,7 @@ public class Ticketmaster{
 			// Pass query to function and get list of results
 			li_of_li = esql.executeQueryAndReturnResult(query);
 			
-			System.out.println(li_of_li);
+			//System.out.println(li_of_li);
 			
 			// Go through each entry and grab the movie ID
 			for(int i = 0; i < li_of_li.size(); i++)
@@ -879,13 +879,14 @@ public class Ticketmaster{
 				// Get the movie ID of every list item
 				movieID.add(list_item.get(1));
 				
-				System.out.println("Item " + (i + 1) + ": " + list_item);
+				//System.out.println("Item " + (i + 1) + ": " + list_item);
 			}
 			
 			// Cycle through each movieID and get the movie equivalent
 			try
 			{
 				List<List<String>> movieItems;
+				List<String> Movie_Stuff;
 				String mtitle = "";
 				String mcountry = "";
 				String mgenre = "";
@@ -895,23 +896,35 @@ public class Ticketmaster{
 				// Search for movies -- SELECT * FROM Movies WHERE mvid = <our values>;
 				movieItems = esql.executeQueryAndReturnResult("SELECT * FROM Movies WHERE mvid = 0;");	// Dummy value to initialize
 
-				System.out.println("Movie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|Duration\t\t|\t\tLanguage");	// Title | Country | Genre | Duration | Language
+				System.out.println("Movie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|\t\tDuration\t\t|\t\tLanguage\n\n");	// Title | Country | Genre | Duration | Language
 				
 				for(int i = 0; i < movieID.size(); i++)
 				{
 					query = "SELECT * FROM Movies WHERE mvid = '" + movieID.get(i) + "';";
 					movieItems = esql.executeQueryAndReturnResult(query);
 					
-					System.out.println("Test: " + movieItems);
+					//System.out.println("Test: " + movieItems);
 					
 					// Take the list item and parse the data
-
+					for(int j = 0; j < movieItems.size(); j++)
+					{
+						Movie_Stuff = movieItems.get(j);
+						
+						//System.out.println("This one: " + Movie_Stuff);
+						
+						// Get needed data from list
+						mtitle = Movie_Stuff.get(1);
+						mcountry = Movie_Stuff.get(3);
+						mgenre = Movie_Stuff.get(7);
+						mdur = Movie_Stuff.get(5);
+						mlang = Movie_Stuff.get(6);
+					}
 				
 					// Display movie
 					System.out.println(mtitle + "\t\t|\t\t" + mcountry + "\t\t|\t\t" + mgenre + "\t\t|\t\t" + mdur + "\t\t|\t\t" + mlang);
 				}
 				
-				System.out.println("Test add: " + movieItems);
+				//System.out.println("Test add: " + movieItems);
 			}
 			catch(Exception e)
 			{
@@ -919,11 +932,14 @@ public class Ticketmaster{
 			}
 			
 			// Success message
-			System.out.println("SEARCH SUCCESSFUL!\n\n\n");
+			System.out.println("\n\nSEARCH SUCCESSFUL!\n\n\n");
 			
 			// Show search
 			System.out.println("Your entered date is: " + date_search);
 			System.out.println("Your entered time is: " + time_search);
+			
+			// Space output from menu
+			space();
 		}
 		catch(Exception e)
 		{
@@ -963,10 +979,93 @@ public class Ticketmaster{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
 		//
 		
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	public static void ListUsersWithPendingBooking(Ticketmaster esql){//12
 		//
