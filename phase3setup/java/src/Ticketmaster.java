@@ -701,10 +701,267 @@ public class Ticketmaster{
 		
 	}
 	
-	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10
-		//
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10		
+		// Variables
+		int year = 0;
+		int day = 0;
+		int month = 0;
+		int hour = 0;
+		int minute = 0;
+		String date_search = "";
+		String time_search = "";
+		String ampm = "";
+		boolean valid = false;
+		
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
+		
+		// Date Menu
+		space();
+		System.out.println("\t\t\tDATE\n\n\n");
+
+		// Allow for input of a date
+		while(valid == false)	// Month selection
+		{
+			System.out.print("Please enter a month to search: ");
+			month = Integer.parseInt(scan.nextLine());
+			
+			if(month < 1 || month > 12)
+			{
+				valid = false;
+			}
+			else
+			{
+				valid = true;
+			}
+		}
+			
+		valid = false;	// Reset statement for next loop
+		
+		while(valid == false)	// Day selection
+		{
+			System.out.print("Please enter a day to search: ");
+			day = Integer.parseInt(scan.nextLine());
+			
+			if(day < 1 || day > 31)
+			{
+				valid = false;
+			}
+			else
+			{
+				valid = true;
+			}
+		}
+		
+		System.out.print("Please enter a year to search: ");
+		year = Integer.parseInt(scan.nextLine());	// Year selection
+
+		// Concatenate and turn into date - format: mm/dd/yyyy
+		date_search = (String.valueOf(month) + "/" + String.valueOf(day) + "/" + String.valueOf(year));
+		
+		// Time Menu
+		space();
+		System.out.println("\t\t\tTIME\n\n\n");
+		
+		valid = false;	// Reset validity bool for time tests
+
+		// Get hour
+		while(valid == false)
+		{
+			System.out.print("Please enter the hour of the show (12-hr format): ");
+			hour = Integer.parseInt(scan.nextLine());
+			
+			if(hour < 1 || hour > 12)
+			{
+				valid = false;
+			}
+			else
+			{
+				valid = true;
+			}
+		}
+
+		valid = false;	// Reset for validity
+		
+		// Get minute
+		while(valid == false)
+		{
+			System.out.print("Please enter the minute of the show: ");
+			minute = Integer.parseInt(scan.nextLine());
+			
+			if(minute < 1 || minute > 59)
+			{
+				valid = false;
+			}
+			else
+			{
+				valid = true;
+			}
+		}
+		
+		valid = false;	// Reset for next validity
+		
+		// Get am/pm
+		while (valid == false)
+		{
+			System.out.print("What time of day [a/p]?: ");
+			ampm = scan.nextLine();
+			System.out.println("Entered value: " + ampm);	// Test input
+
+			if((ampm).equals("a") || (ampm).equals("p"))
+			{
+				if((ampm).equals("a") && hour == 12)
+				{
+					hour = (hour - 12);	// Change to 00
+				}
+				else if((ampm).equals("p") && hour == 12)
+				{
+					hour = hour;	// Do nothing
+				}
+				else if((ampm).equals("p"))
+				{
+					hour = (hour + 12);	// Change to 24-hr format. 1:00 pm --> 13:00
+				}
+				
+				valid = true;
+			}
+			else
+			{
+				System.out.println("Wrong input!");
+				valid = false;
+			}
+		}
+		
+		// Concatenate time together
+		time_search = (hour + ":" + minute);
+		
+		// cls
+		clear();
+	
+		// Try-catch cases w/output if successful
+		try
+		{
+			List<List<String>> li_of_li;
+			List<String> list_item;
+			List<String> movieID = new ArrayList<String>();
+			
+			// Create query string -- SELECT * FROM Shows WHERE sdate='1/1/2001' and sttime='6:25';
+			String query = ("SELECT * FROM Shows WHERE sdate='" + date_search + "' and sttime='" + time_search + "';");
+			
+			// Pass query to function and get list of results
+			li_of_li = esql.executeQueryAndReturnResult(query);
+			
+			System.out.println(li_of_li);
+			
+			// Go through each entry and grab the movie ID
+			for(int i = 0; i < li_of_li.size(); i++)
+			{
+				list_item = li_of_li.get(i);
+				
+				// Get the movie ID of every list item
+				movieID.add(list_item.get(1));
+				
+				System.out.println("Item " + (i + 1) + ": " + list_item);
+			}
+			
+			// Cycle through each movieID and get the movie equivalent
+			try
+			{
+				List<List<String>> movieItems;
+				String mtitle = "";
+				String mcountry = "";
+				String mgenre = "";
+				String mdur = "";
+				String mlang = "";
+				
+				// Search for movies -- SELECT * FROM Movies WHERE mvid = <our values>;
+				movieItems = esql.executeQueryAndReturnResult("SELECT * FROM Movies WHERE mvid = 0;");	// Dummy value to initialize
+
+				System.out.println("Movie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|Duration\t\t|\t\tLanguage");	// Title | Country | Genre | Duration | Language
+				
+				for(int i = 0; i < movieID.size(); i++)
+				{
+					query = "SELECT * FROM Movies WHERE mvid = '" + movieID.get(i) + "';";
+					movieItems = esql.executeQueryAndReturnResult(query);
+					
+					System.out.println("Test: " + movieItems);
+					
+					// Take the list item and parse the data
+
+				
+					// Display movie
+					System.out.println(mtitle + "\t\t|\t\t" + mcountry + "\t\t|\t\t" + mgenre + "\t\t|\t\t" + mdur + "\t\t|\t\t" + mlang);
+				}
+				
+				System.out.println("Test add: " + movieItems);
+			}
+			catch(Exception e)
+			{
+				System.out.println("An error has occurred: " + e);
+			}
+			
+			// Success message
+			System.out.println("SEARCH SUCCESSFUL!\n\n\n");
+			
+			// Show search
+			System.out.println("Your entered date is: " + date_search);
+			System.out.println("Your entered time is: " + time_search);
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 		
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
 		//
