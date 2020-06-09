@@ -718,6 +718,14 @@ public class Ticketmaster{
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10		
 		// Variables
 		int year = 0;
@@ -948,63 +956,54 @@ public class Ticketmaster{
 		
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
-		//
-		
+		// Start by setting up the query to pull all values that are greater than 2010
+		try
+		{
+			List<List<String>> Movies_Newer_li_of_li;
+			List<String> Movies_List;
+			String[] words;
+			String query;
+			String title_test = "";
+			space();
+			
+			query = "SELECT * FROM Movies WHERE rdate>'12/31/2010';";
+			Movies_Newer_li_of_li = esql.executeQueryAndReturnResult(query);
+			
+			System.out.println("Movie titles containing the word 'Love' and were released after 2010.\n\n");
+			
+			// Take one value at a time from query
+			for(int i = 0; i < Movies_Newer_li_of_li.size(); i++)
+			{
+				Movies_List = Movies_Newer_li_of_li.get(i);	// Get each movie array that is > 2010
+				
+				// Get the title of each array
+				title_test = Movies_List.get(1);
+				
+				// Split titles into words
+				words = title_test.split("\\W+");
+				
+				// Scan array letter by letter
+				for(int j = 0; j < words.length; j++)
+				{
+					// Check if the word matches 'love' or "Love"
+					//System.out.print(words[j]);
+					
+					if((words[j]).equals("love") || (words[j]).equals("Love"))
+					{
+						// Print the Title
+						System.out.println(title_test);
+					}
+				}
+				
+				//System.out.println(words);
+			}
+			space();			
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
 
 
