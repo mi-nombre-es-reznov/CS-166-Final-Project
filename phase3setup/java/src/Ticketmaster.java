@@ -32,11 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest; 
 import java.security.NoSuchAlgorithmException;
 
-
-
-
 /*
- * String character counter for verification
+ * Iterable counters
  */
 class CountCharacter    
 {    
@@ -61,7 +58,21 @@ class CountCharacter
 		{
 			return false;
 		}
-    }    
+    }
+	
+	public static int listCounter(List<List<String>> a)
+	{
+		int count = 0;
+		
+		// Iterate through list
+		for(int i = 0; i < a.size(); i++)
+		{
+			count++;
+		}
+		
+		//System.out.println("Total lists: " + count);
+		return count;
+	}
 }    
 
 
@@ -294,7 +305,7 @@ public class Ticketmaster{
 		int rowCount = 0;
 
 		//iterates through the result set and count nuber of results.
-		if(rs.next()){
+		while(rs.next()){
 			rowCount++;
 		}//end while
 		stmt.close ();
@@ -615,70 +626,233 @@ public class Ticketmaster{
 	
 	public static void space()
 	{
-		for(int i = 0; i < 20; i++)
+		for(int i = 0; i < 10; i++)
 		{
 			System.out.println("");
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void AddBooking(Ticketmaster esql){//2
 		// Variables
 		int sid = 0;
-		int cid = 0;
-		int tid = 0;
-		int city_id = 0;
+		int num_res = 0;
+		int user_choice = -1;
+		int csid = 0;
+		String price;
+		String the_name;
+		String seat_num;
+		String seat_type;
+		String city;
+		String state;
+		String zip;
+		List<List<String>> ShowInfo;
+		List<List<String>> ShowSeatsList;
+		List<String> Chosen_Movie;
+		List<List<String>> PresentLists;
+		List<String> Ind_final;
+		List<String> Final_Choice;
 		
-		// Get a date and time from user and display corresponding movies
-		ListShowsStartingOnTimeAndDate(esql);
+
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
 		
-		// Hold
+		// Get a date and time from user and display corresponding movies. Return list of results for Shows.
+		ShowInfo = ListShowsStartingOnTimeAndDate(esql);
+		//System.out.println("Output: " + ShowInfo);
+		
+		// Get Number of returned results
+		num_res = CountCharacter.listCounter(ShowInfo);
+		
+		// Ask the user to pick a number for a movie
+		while(user_choice > num_res || user_choice < 1)
+		{
+			System.out.print("Please select a movie from the Index field: ");
+			user_choice = Integer.parseInt(scan.nextLine());
+		}
+		
+		space();
+		
+		// Get user_choice equivalent in array
+		user_choice = (user_choice - 1);
+		
+		// Take chosen movie and rip sid from it
+		Chosen_Movie = ShowInfo.get(user_choice);
+		sid = Integer.parseInt(Chosen_Movie.get(0));
+		
+		//System.out.println("You have sid: " + sid);
+		
+		// ------------------------------- Shows -> ShowSeats : (sid) -------------------------------
+		// Get list of showseats values w/prices
+		try
+		{
+			String query = "";
+			
+			// Drop View for rewrite
+			esql.executeUpdate("DROP VIEW IF EXISTS present_to_user");
+			esql.executeUpdate("DROP VIEW IF EXISTS cinemas_add");
+			esql.executeUpdate("DROP VIEW IF EXISTS add_theater");
+			esql.executeUpdate("DROP VIEW IF EXISTS price_sno_stype;");
+			
+			// Search with 'sid' -- CREATE VIEW price_sno_stype AS SELECT cs.tid, ss.price, cs.sno, cs.stype FROM ShowSeats AS ss INNER JOIN CinemaSeats AS cs ON ss.csid=cs.csid WHERE sid='25';
+			query = ("CREATE VIEW price_sno_stype AS SELECT ss.csid, cs.tid, ss.price, cs.sno, cs.stype FROM ShowSeats AS ss INNER JOIN CinemaSeats AS cs ON ss.csid=cs.csid WHERE sid='" + Integer.toString(sid) + "';");
+			
+			// Create view (tid, price, sno, stype)
+			esql.executeUpdate(query);
+			
+			// Get view data to cross with -- Theaters X Cinema -- Deal with only null bid values!!!
+			ShowSeatsList = esql.executeQueryAndReturnResult("SELECT * FROM price_sno_stype;");
+			
+			//System.out.println("outs: " + ShowSeatsList);
+			
+			query = "CREATE VIEW add_theater AS SELECT the.cid, pss.price, pss.sno, pss.stype, the.tname FROM price_sno_stype AS pss INNER JOIN Theaters AS the ON pss.tid = the.tid;";
+			
+			// Gather info from both tables needed
+			esql.executeUpdate(query);
+						
+			// Theaters X Cinemas
+			query = "CREATE VIEW cinemas_add AS SELECT c.city_id, at.price, at.sno, at.stype, at.tname FROM add_theater AS at INNER JOIN Cinemas AS c ON at.cid=c.cid;";
+			esql.executeUpdate(query);
+			
+			// Cinemas X Cities
+			query = "CREATE VIEW present_to_user AS SELECT ca.tname, ca.sno, ca.stype, ca.price, c.city_name, c.city_state, c.zip_code FROM cinemas_add AS ca INNER JOIN Cities AS c ON ca.city_id = c.city_id;";
+			esql.executeUpdate(query);
+			
+			// Get data from view
+			query = "SELECT * FROM present_to_user;";
+			PresentLists = esql.executeQueryAndReturnResult(query);
+			
+			//System.out.println("my lists: " + PresentLists);
+			
+			// Present menu description
+			System.out.println("|\tChoice\t|\tTheater\t|\tSeat #\t|\tSeat Type\t|\tPrice\t|\tCity\t|\tState\t|\tZip\t|");
+			System.out.println("___________________________________________________________________________________________________________________________________________________________________\n");
+			
+			// Present menu options to user
+			for(int i = 0; i < PresentLists.size(); i++)
+			{
+				Ind_final = PresentLists.get(i);
+				
+				the_name = Ind_final.get(0);
+				seat_num = Ind_final.get(1);
+				seat_type = Ind_final.get(2);
+				price = Ind_final.get(3);
+				city = Ind_final.get(4);
+				state = Ind_final.get(5);
+				zip = Ind_final.get(6);
+				
+				// Display options
+				System.out.println((i + 1) + "\t|\t" + the_name + "\t|\t" + seat_num + "\t|\t" + seat_type + "\t|\t" + price + "\t|\t" + city + "\t|\t" + state + "\t|\t" + zip + "\n");
+			}
+			
+			// Allow for selection by user
+			num_res = 0;
+			user_choice = -1;
+			
+			//query = "SELECT * FROM PresentLists;";
+			num_res = esql.executeQuery(query);
+			
+			// Verify valid input
+			while(user_choice > num_res || user_choice < 1)
+			{
+				System.out.print("Enter 'choice' value: ");
+				user_choice = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get the OG value from VIEW choice
+			user_choice = (user_choice - 1);
+			Final_Choice = ShowSeatsList.get(user_choice);
+			
+			System.out.println("User has selected: " + Final_Choice);
+			// Get number for csid -- selected by user
+			csid = Integer.parseInt(Final_Choice.get(0));
+			
+			// Get next number for 'bid'
+			query = "SELECT * FROM Bookings";
+			int bid_next = esql.executeQuery(query);
+			bid_next = (bid_next + 1);
+			//System.out.println("Next bid: " + bid_next);
+			
+			//System.out.println("Out # total: " + num_res);
+			
+			// ------------------------------- User Verification -------------------------------
+			String email = "";
+			String first = "";
+			String last = "";
+			
+
+
+			// Initialize 'verify'
+			int verify = 0;
+			
+			// Map verification appropriately
+			while(verify != 1)
+			{
+				// Space 
+				space();
+			
+				// Get email address
+				System.out.print("Please enter your email address on file to book: ");
+				email = scan.nextLine();
+				
+				// Get First and last name
+				System.out.print("Please enter your first name on file (tied to email): ");
+				first = scan.nextLine();
+				
+				System.out.print("Please enter your last name on file (tied to email): ");
+				last = scan.nextLine();		
+
+				// Verify that 1 entry appears in results
+				query = ("SELECT * FROM Users WHERE email = '" + email + "' and fname = '" + first + "' and lname = '" + last + "';");
+				verify = esql.executeQuery(query);
+				
+				if(verify != 1)
+				{
+					System.out.println("\nData is incorrect. Try again!\n");
+				}
+			}
+
+			try
+			{
+				String update = "";
+				String insert = "";
+				List<List<String>> datetime;
+				List<String> dt_list;
+				String dt;
+				
+				// Get current timestamp
+				datetime = esql.executeQueryAndReturnResult("SELECT CURRENT_TIMESTAMP;");
+				dt_list = datetime.get(0);
+				dt = dt_list.get(0);
+				//System.out.println("Your date time output: " + dt);
+				
+				
+				// Insert data into Bookings
+				insert = ("INSERT INTO Bookings(bid, status, bdatetime, seats, sid, email) VALUES('" + bid_next + "', 'pending', '" + dt + "', '1', '" + sid + "', '" + email + "');");
+				esql.executeUpdate(insert);
+				
+				// Update values in ShowSeats
+				update = ("UPDATE ShowSeats SET bid = '" + bid_next + "' WHERE csid='" + csid + "' and sid='" + sid + "';");
+				System.out.println("Info (bid -> csid -> sid): " + bid_next + "\t" + csid + "\t" + sid);
+				esql.executeUpdate(update);
+				
+				clear();
+				System.out.println("Success! Your Booking is Successful!");
+			}
+			catch(Exception e)
+			{
+				System.out.println("An error has occurred: " + e);
+			}
+
+			
+			//System.out.println("Verification value: " + verify);
+			
+			// Space
+			space();
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
 	
 	
@@ -760,7 +934,7 @@ public class Ticketmaster{
 	
 	
 	
-	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10		
+	public static List<List<String>> ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10		
 		// Variables
 		int year = 0;
 		int day = 0;
@@ -866,7 +1040,7 @@ public class Ticketmaster{
 		{
 			System.out.print("What time of day [a/p]?: ");
 			ampm = scan.nextLine();
-			System.out.println("Entered value: " + ampm);	// Test input
+			//System.out.println("Entered value: " + ampm);	// Test input
 
 			if((ampm).equals("a") || (ampm).equals("p"))
 			{
@@ -910,7 +1084,6 @@ public class Ticketmaster{
 			
 			// Pass query to function and get list of results
 			li_of_li = esql.executeQueryAndReturnResult(query);
-			System.out.println("Numerical Results: " + 	esql.executeQueryAndReturnResult(query));
 			
 			//System.out.println(li_of_li);
 			
@@ -939,8 +1112,8 @@ public class Ticketmaster{
 				// Search for movies -- SELECT * FROM Movies WHERE mvid = <our values>;
 				movieItems = esql.executeQueryAndReturnResult("SELECT * FROM Movies WHERE mvid = 0;");	// Dummy value to initialize
 
-				System.out.println("|\t\tMovie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|\t\tDuration\t\t|\t\tLanguage\n\n");	// Title | Country | Genre | Duration | Language
-				System.out.println("______________________________________________________________________________________________________________________________________________________________________________________");
+				System.out.println("|\t\tIndex\t\t|\t\tMovie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|\t\tDuration\t\t|\t\tLanguage\t\t|");	// Title | Country | Genre | Duration | Language
+				System.out.println("______________________________________________________________________________________________________________________________________________________________________________________________________________\n");
 
 				for(int i = 0; i < movieID.size(); i++)
 				{
@@ -962,17 +1135,11 @@ public class Ticketmaster{
 						mgenre = Movie_Stuff.get(7);
 						mdur = Movie_Stuff.get(5);
 						mlang = Movie_Stuff.get(6);
-					}
-				
-				
-				// ------------------------- Check here for repeated statements -------------------------------------
-				
+					}				
 				
 					// Display movie
-					System.out.println(mtitle + "\t\t|\t\t" + mcountry + "\t\t|\t\t" + mgenre + "\t\t|\t\t" + mdur + "\t\t|\t\t" + mlang);
-				}
-				
-				//System.out.println("Test add: " + movieItems);
+					System.out.println((i + 1) + "\t\t|\t\t" + mtitle + "\t\t|\t\t" + mcountry + "\t\t|\t\t" + mgenre + "\t\t|\t\t" + mdur + "\t\t|\t\t" + mlang);
+				}				
 			}
 			catch(Exception e)
 			{
@@ -980,7 +1147,8 @@ public class Ticketmaster{
 			}
 			
 			// Success message
-			System.out.println("\n\nSEARCH SUCCESSFUL!\n\n\n");
+			space();
+			System.out.println("SEARCH SUCCESSFUL!\n\n\n");
 			
 			// Show search
 			System.out.println("Your entered date is: " + date_search);
@@ -988,12 +1156,14 @@ public class Ticketmaster{
 			
 			// Space output from menu
 			space();
+			
+			return li_of_li;
 		}
 		catch(Exception e)
 		{
 			System.out.println("An error has occurred: " + e);
 		}
-		
+		return null;
 	}
 
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
