@@ -762,7 +762,7 @@ public class Ticketmaster{
 			user_choice = (user_choice - 1);
 			Final_Choice = ShowSeatsList.get(user_choice);
 			
-			System.out.println("User has selected: " + Final_Choice);
+			//System.out.println("User has selected: " + Final_Choice);
 			// Get number for csid -- selected by user
 			csid = Integer.parseInt(Final_Choice.get(0));
 			
@@ -832,7 +832,7 @@ public class Ticketmaster{
 				
 				// Update values in ShowSeats
 				update = ("UPDATE ShowSeats SET bid = '" + bid_next + "' WHERE csid='" + csid + "' and sid='" + sid + "';");
-				System.out.println("Info (bid -> csid -> sid): " + bid_next + "\t" + csid + "\t" + sid);
+				//System.out.println("Info (bid -> csid -> sid): " + bid_next + "\t" + csid + "\t" + sid);
 				esql.executeUpdate(update);
 				
 				clear();
@@ -884,9 +884,77 @@ public class Ticketmaster{
 		
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
 		
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
 		
@@ -1216,70 +1284,76 @@ public class Ticketmaster{
 		}
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	public static void ListUsersWithPendingBooking(Ticketmaster esql){//12
-		//
+		// Variables
+		int count = 0;
+		String query = "";
 		
+		try
+		{
+			clear();	// Clear screen
+			
+			System.out.println("********************************************");
+			System.out.println("*        USERS WITH PENDING BOOKINGS        ");
+			System.out.println("********************************************\n\n");
+
+			// Drop table, should it exist
+			query = ("DROP VIEW IF EXISTS pending_list;");
+			esql.executeUpdate(query);			
+			
+			// Create 'pending' view status Bookings X Users
+			query = ("CREATE VIEW pending_list AS SELECT u.fname AS First, u.lname AS Last, u.email AS Email FROM Bookings AS b INNER JOIN Users AS u ON b.email=u.email WHERE b.status = 'pending';");
+			esql.executeUpdate(query);
+			
+			// Display View
+			query = ("SELECT * FROM pending_list");
+			count = esql.executeQueryAndPrintResult(query);
+			
+			// Display number of users in list with 'pending' status
+			System.out.println("\n\n\nNumber of pending reservations: " + count);
+			
+			space();	// Make space
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
 		//
