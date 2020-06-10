@@ -921,7 +921,41 @@ public class Ticketmaster{
 	
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
+		// Variables
+		String query = "";
+		int bid = 0;
+		List<List<String>> bid_arr_of_arr;
+		List<String> bid_arr;
 		
+		try
+		{
+			clear();	// Clear screen
+			// Look for status = 'pending' in Bookings (query)
+			query = ("SELECT bid FROM Bookings WHERE status='pending';");
+			bid_arr_of_arr = esql.executeQueryAndReturnResult(query);
+			bid_arr = bid_arr_of_arr.get(0);	// Dummy variable for initialization
+			
+			// Convert to just individuals
+			for(int i = 0; i < bid_arr_of_arr.size(); i++)
+			{
+				bid_arr = bid_arr_of_arr.get(i);	// List of Lists --> List
+				bid = Integer.parseInt(bid_arr.get(0));	// List --> Number
+				
+				// Create new query to update 'pending' value
+				query = ("UPDATE Bookings SET status='cancelled' WHERE status='pending' and bid='" + bid + "';");
+				esql.executeUpdate(query);
+				
+				//System.out.println("Booking: " + bid);
+			}
+			
+			System.out.println("All pending reservations have been cancelled successfully!");
+			
+			space();
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
 	
 	
