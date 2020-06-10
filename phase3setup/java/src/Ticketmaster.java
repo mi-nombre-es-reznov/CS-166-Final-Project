@@ -998,9 +998,127 @@ public class Ticketmaster{
 		
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
+		// Variables
+		String query = "";
+		int bid = 0;
+		List<List<String>> bid_arr_of_arr;
+		List<String> bid_arr;
 		
+		try
+		{
+			clear();	// Clear screen
+			// Look for status = 'pending' in Bookings (query)
+			query = ("SELECT bid FROM Bookings WHERE status='cancelled';");
+			bid_arr_of_arr = esql.executeQueryAndReturnResult(query);
+			bid_arr = bid_arr_of_arr.get(0);	// Dummy variable for initialization
+			
+			// Convert to just individuals
+			for(int i = 0; i < bid_arr_of_arr.size(); i++)
+			{
+				bid_arr = bid_arr_of_arr.get(i);	// List of Lists --> List
+				bid = Integer.parseInt(bid_arr.get(0));	// List --> Number
+				
+				// Create new query to DELETE bid from ShowSeats
+				query = ("UPDATE ShowSeats SET bid=NULL WHERE bid='" + bid + "';");
+				esql.executeUpdate(query);
+				
+				//System.out.println("Booking: " + bid);
+			}
+			
+			query = ("DELETE FROM Bookings WHERE status = 'cancelled';");
+			esql.executeUpdate(query);
+			
+			System.out.println("All cancelled reservations have been deleted successfully!");
+			
+			space();
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
 		
