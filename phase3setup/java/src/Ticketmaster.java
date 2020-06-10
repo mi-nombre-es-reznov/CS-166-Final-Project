@@ -669,8 +669,42 @@ public class Ticketmaster{
 	
 	
 	public static void AddBooking(Ticketmaster esql){//2
+		// Variables
+		int sid = 0;
+		int cid = 0;
+		int tid = 0;
+		int city_id = 0;
 		
+		// Get a date and time from user and display corresponding movies
+		ListShowsStartingOnTimeAndDate(esql);
+		
+		// Hold
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
 		
@@ -876,6 +910,7 @@ public class Ticketmaster{
 			
 			// Pass query to function and get list of results
 			li_of_li = esql.executeQueryAndReturnResult(query);
+			System.out.println("Numerical Results: " + 	esql.executeQueryAndReturnResult(query));
 			
 			//System.out.println(li_of_li);
 			
@@ -904,8 +939,9 @@ public class Ticketmaster{
 				// Search for movies -- SELECT * FROM Movies WHERE mvid = <our values>;
 				movieItems = esql.executeQueryAndReturnResult("SELECT * FROM Movies WHERE mvid = 0;");	// Dummy value to initialize
 
-				System.out.println("Movie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|\t\tDuration\t\t|\t\tLanguage\n\n");	// Title | Country | Genre | Duration | Language
-				
+				System.out.println("|\t\tMovie Title\t\t|\t\tCountry\t\t|\t\tGenre\t\t|\t\tDuration\t\t|\t\tLanguage\n\n");	// Title | Country | Genre | Duration | Language
+				System.out.println("______________________________________________________________________________________________________________________________________________________________________________________");
+
 				for(int i = 0; i < movieID.size(); i++)
 				{
 					query = "SELECT * FROM Movies WHERE mvid = '" + movieID.get(i) + "';";
@@ -927,6 +963,10 @@ public class Ticketmaster{
 						mdur = Movie_Stuff.get(5);
 						mlang = Movie_Stuff.get(6);
 					}
+				
+				
+				// ------------------------- Check here for repeated statements -------------------------------------
+				
 				
 					// Display movie
 					System.out.println(mtitle + "\t\t|\t\t" + mcountry + "\t\t|\t\t" + mgenre + "\t\t|\t\t" + mdur + "\t\t|\t\t" + mlang);
