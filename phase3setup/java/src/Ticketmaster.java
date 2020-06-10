@@ -1446,7 +1446,7 @@ public class Ticketmaster{
 			clear();	// Clear screen
 			
 			System.out.println("********************************************");
-			System.out.println("*        USERS WITH PENDING BOOKINGS        ");
+			System.out.println("*        USERS WITH PENDING BOOKINGS       *");
 			System.out.println("********************************************\n\n");
 
 			// Drop table, should it exist
@@ -1508,9 +1508,152 @@ public class Ticketmaster{
 	
 
 	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
-		//
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
 		
+		// Variables
+		int month_one = 0;
+		int month_two = 0;
+		int day_one = 0;
+		int day_two = 0;
+		int year_one = 0;
+		int year_two = 0;
+		String date_one = "";
+		String date_two = "";
+		String query = "";
+
+		
+		// Title Screen
+		System.out.println("***********************************");
+		System.out.println("*        Film Range Finder        *");
+		System.out.println("***********************************\n\n");
+		
+		// Start asking for both date ranges
+		while(month_one > 12 || month_one < 1)
+		{
+			System.out.println("Enter the month (lower bound): ");
+			month_one = Integer.parseInt(scan.nextLine());
+		}
+		
+		while(day_one > 31 || day_one < 1)
+		{
+			System.out.println("Enter the day (lower bound): ");
+			day_one = Integer.parseInt(scan.nextLine());
+		}
+		
+		while(year_one > 2050 || year_one < 1950)
+		{
+			System.out.println("Enter the year (lower bound): ");
+			year_one = Integer.parseInt(scan.nextLine());
+		}
+		
+		while(month_two > 12 || month_two < 1)
+		{
+			System.out.println("Enter the month (upper bound): ");
+			month_two = Integer.parseInt(scan.nextLine());
+		}
+		
+		while(day_two > 31 || day_two < 1)
+		{
+			System.out.println("Enter the day (upper bound): ");
+			day_two = Integer.parseInt(scan.nextLine());
+		}
+		
+		while(year_two > 2050 || year_two < 1950)
+		{
+			System.out.println("Enter the year (upper bound): ");
+			year_two = Integer.parseInt(scan.nextLine());
+		}
+		
+		// Concatenate the dates together
+		date_one = (Integer.toString(month_one) + "/" + Integer.toString(day_one) + "/" + Integer.toString(year_one));
+		date_two = (Integer.toString(month_two) + "/" + Integer.toString(day_two) + "/" + Integer.toString(year_two));
+
+		// Create View
+		try
+		{					
+			clear();	// Clear Screen
+			
+			System.out.println("********************************************");
+			System.out.println("*        DATE RANGE FINDER OF MOVIES       *");
+			System.out.println("********************************************\n\n");
+
+			// Delete pre-existing VIEW
+			esql.executeUpdate("DROP VIEW IF EXISTS date_range");
+			
+			// Form query
+			query = ("CREATE VIEW date_range AS SELECT m.title, m.duration, s.sdate AS date, s.sttime AS start_time, s.edtime AS end_time FROM Shows AS s INNER JOIN MOVIES AS m ON s.mvid = m.mvid WHERE s.sdate > '" + date_one + "' and s.sdate < '" + date_two + "';");
+		
+			esql.executeUpdate(query);
+		
+			// Display Results
+			query = ("SELECT * FROM date_range");
+			esql.executeQueryAndPrintResult(query);
+			
+			// Display success message
+			System.out.println("\n\nDate Range-Finder Successful!\n\n");
+			
+			System.out.println("You entered date 1 as: " + date_one);
+			System.out.println("You entered date 2 as: " + date_two);
+			
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
+		space();
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
 		//
