@@ -1124,10 +1124,254 @@ public class Ticketmaster{
 		
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
-		//
+		// Variables
+		int tot_movies = 0;
+		int movie_choice = 0;
+		String query = "";
+				
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
 		
+		// Display all movie choices
+		try
+		{
+			// Create 3 arrays for later use
+			List<String> cnames = new ArrayList<String>();
+			List<String> tnames = new ArrayList<String>();
+			List<List<String>> inter_step;
+			List<String> unique_cnames = new ArrayList<String>();
+			
+			query = ("SELECT mvid AS OPTION, title FROM Movies;");
+			tot_movies = esql.executeQueryAndPrintResult(query);
+			
+			// Allow a user to select a movie
+			while(movie_choice > tot_movies || movie_choice < 1)
+			{
+				// Ask user for choice
+				System.out.print("\n\n\nPlease select a movie to find where it is playing: ");
+				movie_choice = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Delete existing views and all views relying on it
+			query = ("DROP VIEW got_sid CASCADE;");
+			esql.executeUpdate(query);
+			
+			// Get all sid's for chosen mvid's
+			query = ("CREATE VIEW got_sid AS SELECT sid FROM Shows WHERE mvid = '" + movie_choice + "';");
+			esql.executeUpdate(query);
+			
+			// Shows X ShowSeats: (sid) - ret(csid)
+			query = ("CREATE VIEW got_csid AS SELECT csid FROM got_sid AS gs INNER JOIN ShowSeats AS ss ON gs.sid = ss.sid;");
+			esql.executeUpdate(query);
+			
+			// ShowSeats X CinemaSeats: (csid) - ret(tid)
+			query = ("CREATE VIEW got_tid AS SELECT tid FROM got_csid AS ss INNER JOIN CinemaSeats AS cs ON ss.csid = cs.csid;");
+			esql.executeUpdate(query);
+			
+			// CinemaSeats X Theaters: (tid) - ret(tid and tname)
+			query = ("CREATE VIEW final_data AS SELECT t.cid, t.tname FROM got_tid AS cs INNER JOIN Theaters AS t ON cs.tid = t.tid;");
+			esql.executeUpdate(query);
+			
+			// Theaters X Cinemas: (tid)
+			query = ("CREATE VIEW cinemas_add AS SELECT f.tname, c.cname FROM final_data as f INNER JOIN Cinemas AS c ON f.cid = c.cid;");
+			esql.executeUpdate(query);
+			
+			// Call for a return of data: (tname, cname)
+			query = ("SELECT * FROM cinemas_add;");
+			List<List<String>> c_t_names_li_of_li = esql.executeQueryAndReturnResult(query);
+			
+			// Iterate to get each pair of names
+			for(int i = 0; i < c_t_names_li_of_li.size(); i++)
+			{
+				List<String> c_t_names_li = c_t_names_li_of_li.get(i);	// Each pair of names
+				
+				// Place each value in seperate arrays
+				tnames.add(c_t_names_li.get(0));
+				cnames.add(c_t_names_li.get(1));
+			}
+			
+			// Get unique list of cnames
+			query = ("SELECT DISTINCT cname FROM cinemas_add;");
+			inter_step = esql.executeQueryAndReturnResult(query);
+			
+			// Get each item into one list
+			for(int i = 0; i < inter_step.size(); i++)
+			{
+				List<String> each_list = inter_step.get(i);
+				unique_cnames.add(each_list.get(0));
+			}
+			
+			//System.out.println("Unique cnames: " + unique_cnames);
+			//System.out.println("tnames: " + tnames);
+			//System.out.println("cnames: " + cnames);
+			
+			clear();	// Clear screen
+			
+			System.out.println("*********************************************");
+			System.out.println("*        Given Show at Cinema/Theater       *");
+			System.out.println("*********************************************\n\n");
+			
+			// Iterate through each unique cname and find matching cnames
+ 			for(int i = 0; i < unique_cnames.size(); i++)
+			{
+				// Show current Cinema [unique]
+				System.out.println("\t" + unique_cnames.get(i));
+				
+				for(int j = 0; j < cnames.size(); j++)
+				{
+					// If the cname matches the current unique cname...
+					if((cnames.get(j)).equals(unique_cnames.get(i)))
+					{
+						// Print to screen - Theater name
+						System.out.println(tnames.get(j));
+					}
+				}
+				
+				System.out.println("\n\n\n");
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
