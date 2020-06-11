@@ -1471,41 +1471,6 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
 		// Initialize Scanner
@@ -1605,59 +1570,119 @@ public class Ticketmaster{
 		space();
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
-		//
+		// Variables
+		String first = "";
+		String last = "";
+		String email = "";
+		String query = "";
+		String title = "";
+		String show_date = "";
+		String start_time = "";
+		String theater_name = "";
+		String seat_num = "";
+		int sid = 0;
+		int bid = 0;
+		List<List<String>> user_info;
+		List<String> inter_step;
 		
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
+		
+		// Identify user via email
+		System.out.print("Enter your email address: ");
+		email = scan.nextLine();
+		
+		try
+		{
+			// Get list of user info
+			query = ("SELECT fname, lname FROM Users WHERE email = '" + email + "';");
+			user_info = esql.executeQueryAndReturnResult(query);
+			
+			// Intermediate step
+			inter_step = user_info.get(0);
+			
+			// Seperate list to get user's name
+			first = inter_step.get(0);
+			last = inter_step.get(1);
+			
+			clear();	// Clear Screen
+			System.out.println("The data below represents the current on-file data for: " + first + " " + last + "\n\n");
+			
+			// Users X Bookings (email) --> sid
+			query = ("SELECT b.bid, b.sid FROM Users AS u INNER JOIN Bookings AS b ON u.email = b.email WHERE b.email = '" + email + "';");
+			user_info = esql.executeQueryAndReturnResult(query);
+			
+			System.out.println("|\t\tMovie Title\t\t|\t\tMovie Duration\t\t|\tShow Date\t|\tStart Time\t|\t\tTheater Name\t\t|\tSeat Number\t|");
+			System.out.println("__________________________________________________________________________________________________________________________________________________________________________________________________\n");
+			
+			// Set up a loop to iterate through all values
+			for(int i = 0; i < user_info.size(); i++)
+			{
+				// Delete views if they exist
+				esql.executeUpdate("DROP VIEW IF EXISTS base CASCADE;");
+		
+				//System.out.println("User info returned: " + user_info);
+			
+				inter_step = user_info.get(i);
+				
+				bid = Integer.parseInt(inter_step.get(0));
+				sid = Integer.parseInt(inter_step.get(1));
+				
+				//System.out.println("sid: " + sid + "\tbid: " + bid + "\t");
+				
+				// Bookings X ShowSeats
+				query = ("CREATE VIEW base AS SELECT ss.bid, ss.sid, ss.csid FROM Bookings AS b INNER JOIN ShowSeats AS ss ON b.sid=ss.sid and b.bid=ss.bid WHERE b.sid = '" + sid + "' and b.bid = '" + bid + "';");
+				// Test - query = ("CREATE VIEW base AS SELECT ss.bid, ss.sid, ss.csid FROM Bookings AS b INNER JOIN ShowSeats AS ss ON b.sid=ss.sid and b.bid=ss.bid WHERE b.sid = '25' and b.bid = '501';");
+				esql.executeUpdate(query);
+				
+				// base X Shows
+				query = ("CREATE VIEW base_shows AS SELECT b.bid, b.sid, b.csid, s.mvid, s.sdate, s.sttime FROM base AS b INNER JOIN Shows AS s ON b.sid = s.sid WHERE b.bid = '" + bid + "' and s.sid = '" + sid + "';");
+				esql.executeUpdate(query);
+				
+				// Shows X Movies
+				query = ("CREATE VIEW bs_movies AS SELECT b.bid, b.sid, b.csid, b.sdate, b.sttime, m.title FROM base_shows as b INNER JOIN Movies as m ON b.mvid = m.mvid WHERE b.mvid = m.mvid;");
+				esql.executeUpdate(query);
+				
+				// bs_movies X CinemaSeats
+				query = ("CREATE VIEW bs_cs AS SELECT bs.bid, bs.sid, bs.sdate, bs.sttime, bs.title, cs.tid, cs.sno FROM bs_movies as bs INNER JOIN CinemaSeats as cs ON bs.csid = cs.csid;");
+				esql.executeUpdate(query);
+				
+				// bs_cs X Theaters
+				query = ("CREATE VIEW final_ret AS SELECT b.title, b.sdate AS Show_Date, b.sttime AS start_time, t.tname AS theater_name, b.sno AS seat_number FROM bs_cs AS b INNER JOIN Theaters as t ON b.tid=t.tid;");
+				esql.executeUpdate(query);
+				
+				// Display Result
+				query = ("SELECT * FROM final_ret;");
+				List<List<String>> final_string = esql.executeQueryAndReturnResult(query);
+				int none = esql.executeQuery(query);
+				
+				if(none == 0)
+				{
+					System.out.println("\n\n\n\t\tThere are no Bookings on file for this user!");
+				}
+				else
+				{
+					List<String> list_per_item_final = final_string.get(0);	// Each value in list of lists
+					
+					// Pull each value out for displaying
+					title = list_per_item_final.get(0);
+					show_date = list_per_item_final.get(1);
+					start_time = list_per_item_final.get(2);
+					theater_name = list_per_item_final.get(3);
+					seat_num = list_per_item_final.get(4);
+					
+					// Display final result
+					System.out.println(title + "\t\t|\t" + show_date + "\t|\t" + start_time + "\t|\t\t" + theater_name + "\t\t|\t" + seat_num + "\t|\n");
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			clear();
+			System.out.println("This email is not on file! Please enter an email with an account.");
+		}
+		space();
 	}
-	
 }
