@@ -31,6 +31,11 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets; 
 import java.security.MessageDigest; 
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.sql.*;
 
 /*
  * Iterable counters
@@ -880,9 +885,294 @@ public class Ticketmaster{
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
+		// Variables
+		String query = "";
+		String title = "";
+		String country = "";
+		String desc = "";
+		String lang = "";
+		String genre = "";
+		String rdate = "";
+		String show_date = "";
+		String Show_start = "";
+		String Show_end = "";
+		int sid_next = 0;
+		int stday = 0;
+		int stmonth = 0;
+		int styear = 0;
+		int start_hour = 0;
+		int start_min = 0;
+		int end_hour = 0;
+		int end_min = 0;
+		int dur = 0;
+		int datemonth = 0;
+		int dateday = 0;
+		int dateyear = 0;
+		int mvid = 0;
+		int tid = 0;
+						
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
 		
+		System.out.println("***********************************************");
+		System.out.println("*        INSERT NEW MOVIE INTO DATABASE       *");
+		System.out.println("***********************************************\n\n");
+		
+		try
+		{
+			// Movie Info Title
+			System.out.println("\tMovie Information\n");
+			
+			// Get mvid from database
+			query = ("SELECT * FROM Movies;");
+			mvid = esql.executeQuery(query);
+			
+			// Get new mvid
+			mvid = (mvid + 1);
+			
+						// --- Get Movie Info ---
+			// Get movie title
+			System.out.print("What is the title of the movie: ");
+			title = scan.nextLine();
+			
+						// --- Get release date in pieces ---
+			// Get release month
+			while(datemonth > 12 || datemonth < 1)
+			{
+				System.out.print("What month as this released? ");
+				datemonth = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get release day
+			while(dateday > 31 || dateday < 1)
+			{
+				System.out.print("What day was this released? ");
+				dateday = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get release year
+			while(dateyear > 2050 || dateyear < 1950)
+			{
+				System.out.print("What year was this released (1950 or newer)? ");
+				dateyear = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Piece valid pieces together
+			rdate = (Integer.toString(datemonth) + "/" + Integer.toString(dateday) + "/" + Integer.toString(dateyear));
+			
+			// Get country of origin
+			System.out.print("Which country was this movie released? ");
+			country = scan.nextLine();
+			
+			// Get a description for th movie
+			System.out.print("Please give a description for this movie: ");
+			desc = scan.nextLine();
+			
+			// Get a length for the movie in secs
+			System.out.print("What is the movie duration (in seconds): ");
+			dur = Integer.parseInt(scan.nextLine());
+			
+			boolean valid = false;	// Set bool to false for valid
+						
+			// Get language code
+			while(valid == false)
+			{
+				System.out.print("Please enter the language code for this movie [2 characters MAX]: ");
+				lang = scan.nextLine();
+				
+				// Verify it is only 2 chars
+				valid = CountCharacter.cnt_str(lang, 2);
+			}
+			
+			// Get genre
+			System.out.print("Please enter the genre: ");
+			genre = scan.nextLine();
+
+					// --- Get Shows Info ---
+			// Get sid from database
+			query = ("SELECT * FROM Shows;");
+			sid_next = esql.executeQuery(query);
+			
+			// Get next sid
+			sid_next = (sid_next + 1);
+			
+					// --- Get Show Date ---
+			// Get show month
+			while(stmonth > 12 || stmonth < 1)
+			{
+				System.out.print("What month is this show: ");
+				stmonth = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get the day of the show
+			while(stday > 31 || stday < 1)
+			{
+				System.out.print("What day is this show: ");
+				stday = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get the show year
+			while(styear > 2050 || styear < 2020)
+			{
+				System.out.print("What year is this show (2020 minimum): ");
+				styear = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Concate show date
+			show_date = (Integer.toString(stmonth) + "/" + Integer.toString(stday) + "/" + Integer.toString(styear));
+			
+			// Get the start hour of the show
+			while(start_hour > 23 || start_hour < 0)
+			{
+				System.out.print("What hour does this show start (24-hr format): ");
+				start_hour = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get the start minute of the show
+			while(start_min > 59 || start_min < 0)
+			{
+				System.out.print("What minute does this show start: ");
+				start_min = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Concate show time - start
+			Show_start = (Integer.toString(start_hour) + ":" + Integer.toString(start_min) + ":00");
+			
+			// Get end hour of show
+			while(end_hour > 23 || end_hour < 0)
+			{
+				System.out.print("What hour does this show end (24-hr format): ");
+				end_hour = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Get the end minute of the show
+			while(start_min > 59 || start_min < 0)
+			{
+				System.out.print("What minute does this show end: ");
+				end_min = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Concate show time - end
+			Show_end = (Integer.toString(end_hour) + ":" + Integer.toString(end_min) + ":00");
+			
+			// Get the number of theaters total
+			int num_theaters;
+			query = ("SELECT * FROM Theaters");
+			num_theaters = esql.executeQuery(query);
+			
+			// Generate random number with bounds
+			int random_number = 0;
+			Random rand = new Random();	// Random class
+			while(random_number == 0)
+			{
+				random_number = rand.nextInt(num_theaters);
+			}
+			
+					// --- Start performing updates -- Order: Movies, Shows, Plays ---
+			// Insert movie
+			query = ("INSERT INTO Movies(mvid, title, rdate, country, description, duration, lang, genre) VALUES('" + mvid + "', '" + title + "', '" + rdate + "', '" + country + "', '" + desc + "', '" + dur + "', '" + lang + "', '" + genre + "');");
+			esql.executeUpdate(query);
+			
+			
+			
+			
+			// Insert Shows
+			// Query = INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('202', '55', '1/20/2020', '8:30:00', '5:23:00'); 								TIME_FORMAT("19:30:10", "%H %i %s")
+			query = ("INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('" + sid_next + "', '" + mvid + "', '" + show_date + "', TIME(" + "19:30:10" + ") , '" + Show_end + "');");
+			//query = ("INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('" + sid_next + "', '" + mvid + "', '" + show_date + "', '" + time + "', '" + Show_end + "');");
+			esql.executeUpdate(query);
+			
+			// Update time
+			query = ("UPDATE Shows SET sttime = '" + Show_start + "' WHERE sid = '" + sid_next + "';");
+			esql.executeUpdate(query);
+			
+			// Insert Plays
+			query = ("INSERT INTO Plays(sid, tid) VALUES('" + sid_next + "', '" + random_number + "');");
+			
+			// Display results
+			clear();
+			
+			System.out.println("Your record has successfully been input into the system!\n\n\n");
+			query = ("SELECT * FROM Movies WHERE mvid = '" + mvid + "';");
+			esql.executeQueryAndPrintResult(query);	// Movies
+			
+			System.out.println("\n\n");	// space
+			
+			query = ("SELECT * FROM Shows WHERE sid = '" + sid_next + "';");
+			esql.executeQueryAndPrintResult(query);	// Shows
+			
+			System.out.println("\n\n");	// space
+			
+			query = ("SELECT * FROM Plays WHERE sid = '" + sid_next + "';");
+			esql.executeQueryAndPrintResult(query);
+			
+			// Space
+			space();
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -994,9 +1284,255 @@ public class Ticketmaster{
 		
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void RemovePayment(Ticketmaster esql){//6
+		// Variables
+		String query = "";
+		String user_email = "";
+		String user_first = "";
+		String user_last = "";
+		String start_date = "";
+		String start_time = "";
+		String movie_title = "";
+		int user_sid = 0;
+		int user_bid = 0;
+		int movie_id = 0;
+		int user_choice = 0;
+		int ret_choices = 0;
 		
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
+		
+		try
+		{
+			// Delete all VIEWS
+			query = ("DROP VIEW IF EXISTS user_identified CASCADE;");
+			esql.executeUpdate(query);
+			
+			// Get user email
+			System.out.print("Please enter your email address: ");
+			user_email = scan.nextLine();
+			
+			// Get user from database - ret(email)
+			query = ("CREATE VIEW user_identified AS SELECT email FROM Users WHERE email = '" + user_email + "';");
+			esql.executeUpdate(query);
+			
+			// user_identified X Bookings - ret(bookings_found)
+			query = ("CREATE VIEW bookings_found AS SELECT b.bid, b.sid FROM user_identified AS u INNER JOIN Bookings as b ON u.email = b.email WHERE u.email = '" + user_email + "';");
+			esql.executeUpdate(query);
+			
+			// bookings_found X Shows - ret(shows_found)
+			query = ("CREATE VIEW shows_found AS SELECT bf.bid, bf.sid, s.mvid, s.sdate, s.sttime FROM bookings_found as bf INNER JOIN Shows AS s ON bf.sid = s.sid;");
+			esql.executeUpdate(query);
+			
+			// shows_found X Movies - ret(movies_added)
+			query = ("CREATE VIEW movies_added AS SELECT s.bid, s.sid, s.sdate, s.sttime, m.title FROM shows_found as s INNER JOIN Movies AS m ON s.mvid = m.mvid;");
+			esql.executeUpdate(query);
+			
+			// Get results for movies_added
+			query = ("SELECT * FROM movies_added;");
+			List<List<String>> what_we_want = esql.executeQueryAndReturnResult(query);
+			
+			// Get number of choices
+			query = ("SELECT * FROM movies_added;");
+			ret_choices = esql.executeQuery(query);
+			
+			// Space and set up view for user to select from
+			clear();	// Clear screen
+			
+			System.out.println("*********************************************");
+			System.out.println("*        Show Cancellation and Refund       *");
+			System.out.println("*********************************************\n\n");
+			
+			System.out.println("|\tChoice\t|\t\tMovie Title\t\t|\t\tStart Date\t\t|\t\tStart Time\t\t|\n");
+			// Iterate through lists of lists
+			for(int i = 0; i < what_we_want.size(); i++)
+			{
+				// Get individual lists
+				List<String> list_item = what_we_want.get(i);
+				
+				// Pull parts of individual lists
+				start_date = list_item.get(2);
+				start_time = list_item.get(3);
+				movie_title = list_item.get(4);
+				
+				// Display results
+				System.out.println("|\t" + (i + 1) + "\t|\t\t" + movie_title + "\t\t|\t\t" + start_date + "\t\t|\t\t" + start_time);
+			}
+			
+			// Make a little space
+			System.out.println("\n\n");
+			
+			// Ask for choice
+			while(user_choice > ret_choices || user_choice < 1)
+			{
+				// Get number for deletion
+				System.out.print("Please select which booking you would like to cancel and recieve a refund for: ");
+				user_choice = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Adjust to match array
+			user_choice = (user_choice - 1);
+			
+			// Get array from array of arrays
+			List<String> user_selection = what_we_want.get(user_choice);
+			
+			// get user selected: bid and sid
+			user_bid = Integer.parseInt(user_selection.get(0));
+			user_sid = Integer.parseInt(user_selection.get(1));
+			
+			// UPDATE value in ShowSeats with Null
+			query = ("UPDATE ShowSeats SET bid = Null WHERE sid = '" + user_sid + "' and bid = '" + user_bid + "';");
+			esql.executeUpdate(query);
+			
+			// Update bookings value
+			query = ("UPDATE Bookings SET status = 'cancelled' WHERE bid = '" + user_bid + "' and email = '" + user_email + "';");
+			esql.executeUpdate(query);
+			
+			// Confimration of success
+			clear();
+			System.out.println("Your selected booking has been deleted!");
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
+		space();
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -1312,92 +1848,7 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static List<List<String>> ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10		
 		// Variables
 		int year = 0;
