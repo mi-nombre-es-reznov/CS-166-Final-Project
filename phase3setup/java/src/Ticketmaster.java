@@ -859,58 +859,7 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
 		// Variables
 		String query = "";
@@ -1143,74 +1092,7 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void CancelPendingBookings(Ticketmaster esql){//4
 		// Variables
 		String query = "";
@@ -1248,6 +1130,33 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -1575,7 +1484,143 @@ public class Ticketmaster{
 	
 	
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
+		// Variables
+		String rm_date = "";
+		String query = "";
+		int rm_month = 0;
+		int rm_day = 0;
+		int rm_year = 0;
+		int user_choice = 0;
+				
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
 		
+		// Get user input date
+		while(rm_month > 12 || rm_month < 1)
+		{
+			System.out.print("Please enter the month you would like to remove: ");
+			rm_month = Integer.parseInt(scan.nextLine());
+		}
+
+		while(rm_day > 31 || rm_day < 1)
+		{
+			System.out.print("Please enter the day you would like to remove: ");
+			rm_day = Integer.parseInt(scan.nextLine());
+		}
+
+		while(rm_year > 2050 || rm_year < 1950)
+		{
+			System.out.print("Please enter the year you would like to remove: ");
+			rm_year = Integer.parseInt(scan.nextLine());
+		}
+		
+		try
+		{
+			// Delete all views
+			query = ("DROP VIEW IF EXISTS got_date CASCADE;");
+			esql.executeUpdate(query);
+			
+			// Concate date
+			rm_date = (Integer.toString(rm_month) + "/" + Integer.toString(rm_day) + "/" + Integer.toString(rm_year));
+			
+			// Set up query for search
+			query = ("CREATE VIEW got_date AS SELECT sid FROM Shows WHERE sdate = '" + rm_date + "';");
+			esql.executeUpdate(query);
+			
+			// got_date X ShowSeats
+			query = ("CREATE VIEW cross_show AS SELECT gd.sid, ss.csid, ss.bid FROM got_date as gd INNER JOIN ShowSeats as ss ON gd.sid = ss.sid;");
+			esql.executeUpdate(query);
+			
+			// cross_show X CinemaSeats
+			query = ("CREATE VIEW cin_seats AS SELECT cr.sid, cr.bid, cs.tid FROM cross_show as cr INNER JOIN CinemaSeats AS cs ON cr.csid = cs.csid;");
+			esql.executeUpdate(query);
+			
+			// cin_seats X Theaters
+			query = ("CREATE VIEW got_cid AS SELECT cs.sid, cs.bid, t.cid FROM cin_seats AS cs INNER JOIN Theaters AS t ON cs.tid = t.tid;");
+			esql.executeUpdate(query);
+			
+			// got_cid X Cinemas
+			query = ("CREATE VIEW present_cin AS SELECT gc.sid, gc.bid, c.cname FROM got_cid as gc INNER JOIN CINEMAS AS c ON gc.cid = c.cid;");
+			esql.executeUpdate(query);
+			
+			// Get unique Cinema names
+			query = ("SELECT DISTINCT cname FROM present_cin;");
+			List<List<String>> unique_li_of_li = esql.executeQueryAndReturnResult(query);
+			
+			System.out.println("Array of arrays: " + unique_li_of_li);
+			
+			// Set up what user will see
+			clear();
+			System.out.print("|\tOption\t|\t\tCinema\t\t|\n\n");
+			
+			// Loop through and display each options
+			for(int i = 0; i < unique_li_of_li.size(); i++)
+			{
+				List<String> List_item = unique_li_of_li.get(i);
+				
+				String cin_title = List_item.get(0);
+				
+				System.out.println("|\t" + (i + 1) + "\t|\t" + cin_title + "\t\t");
+			}
+			
+			// Get number of options
+			query = ("SELECT * FROM present_cin;");
+			int tot_cin = esql.executeQuery(query);
+			
+			while(user_choice > tot_cin || user_choice < 1)
+			{
+				System.out.print("\n\nPlease select which Cinema you would like to remove all shows for: ");
+				user_choice = Integer.parseInt(scan.nextLine());
+			}
+			
+			// Adjust choice for array
+			user_choice = (user_choice - 1);
+			
+			// Get user_choice from array
+			List<String> remove_this_list = unique_li_of_li.get(user_choice);
+			String rm_this = remove_this_list.get(0);
+			
+			//System.out.println("Removing Cinema: " + rm_this);
+			
+			// Get query ready to pull out only that cinemas_add
+			query = ("CREATE VIEW rm_with_cinema AS SELECT * FROM present_cin WHERE cname = '" + rm_this + "';");
+			esql.executeUpdate(query);
+			
+			// rm_with_cinema X Bookings
+			query = ("CREATE VIEW rm_final AS SELECT rm.sid, rm.bid, b.email, b.status FROM rm_with_cinema AS rm INNER JOIN Bookings AS b ON rm.sid = b.sid and rm.bid = b.bid;");
+			esql.executeUpdate(query);
+			
+			// Get all results from this query
+			query = ("SELECT * FROM rm_final;");
+			List<List<String>> rm_time_li_o_li = esql.executeQueryAndReturnResult(query);
+			
+			for(int i = 0; i < rm_time_li_o_li.size(); i++)
+			{
+				List<String> pull_apart = rm_time_li_o_li.get(i);
+				
+				// Pull data one at a time
+				String u_sid = pull_apart.get(0);
+				String u_bid = pull_apart.get(1);
+				
+				// Update Bookings to cancelled
+				query = ("UPDATE Bookings SET status = 'cancelled' WHERE bid = '" + u_bid + "' and sid = '" + u_sid + "';");
+				esql.executeUpdate(query);
+				
+				// Delete bid from ShowSeats
+				query = ("UPDATE ShowSeats SET bid = Null WHERE sid = '" + u_sid + "' and bid = '" + u_bid + "';");
+				esql.executeUpdate(query);
+				
+				// Success message
+				clear();
+				System.out.println("Your requested date and Cinema has had all of its shows cancelled");
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
+		space();
 	}
 	
 	
