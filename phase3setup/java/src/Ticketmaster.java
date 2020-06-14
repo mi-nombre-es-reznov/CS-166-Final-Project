@@ -1050,14 +1050,14 @@ public class Ticketmaster{
 			show_date = (Integer.toString(stmonth) + "/" + Integer.toString(stday) + "/" + Integer.toString(styear));
 			
 			// Get the start hour of the show
-			while(start_hour > 23 || start_hour < 0)
+			while(start_hour > 23 || start_hour < 1)
 			{
 				System.out.print("What hour does this show start (24-hr format): ");
 				start_hour = Integer.parseInt(scan.nextLine());
 			}
 			
 			// Get the start minute of the show
-			while(start_min > 59 || start_min < 0)
+			while(start_min > 59 || start_min < 1)
 			{
 				System.out.print("What minute does this show start: ");
 				start_min = Integer.parseInt(scan.nextLine());
@@ -1067,14 +1067,14 @@ public class Ticketmaster{
 			Show_start = (Integer.toString(start_hour) + ":" + Integer.toString(start_min) + ":00");
 			
 			// Get end hour of show
-			while(end_hour > 23 || end_hour < 0)
+			while(end_hour > 23 || end_hour < 1)
 			{
 				System.out.print("What hour does this show end (24-hr format): ");
 				end_hour = Integer.parseInt(scan.nextLine());
 			}
 			
 			// Get the end minute of the show
-			while(start_min > 59 || start_min < 0)
+			while(end_min > 59 || end_min < 1)
 			{
 				System.out.print("What minute does this show end: ");
 				end_min = Integer.parseInt(scan.nextLine());
@@ -1106,8 +1106,8 @@ public class Ticketmaster{
 			
 			// Insert Shows
 			// Query = INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('202', '55', '1/20/2020', '8:30:00', '5:23:00'); 								TIME_FORMAT("19:30:10", "%H %i %s")
-			query = ("INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('" + sid_next + "', '" + mvid + "', '" + show_date + "', TIME(" + "19:30:10" + ") , '" + Show_end + "');");
-			//query = ("INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('" + sid_next + "', '" + mvid + "', '" + show_date + "', '" + time + "', '" + Show_end + "');");
+			//query = ("INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('" + sid_next + "', '" + mvid + "', '" + show_date + "', TIME(" + "19:30:10" + ") , '" + Show_end + "');");
+			query = ("INSERT INTO Shows(sid, mvid, sdate, sttime, edtime) VALUES('" + sid_next + "', '" + mvid + "', '" + show_date + "', '" + Show_start + "', '" + Show_end + "');");
 			esql.executeUpdate(query);
 			
 			// Update time
@@ -1116,12 +1116,13 @@ public class Ticketmaster{
 			
 			// Insert Plays
 			query = ("INSERT INTO Plays(sid, tid) VALUES('" + sid_next + "', '" + random_number + "');");
+			esql.executeUpdate(query);
 			
 			// Display results
 			clear();
 			
 			System.out.println("Your record has successfully been input into the system!\n\n\n");
-			query = ("SELECT * FROM Movies WHERE mvid = '" + mvid + "';");
+/* 			query = ("SELECT * FROM Movies WHERE mvid = '" + mvid + "';");
 			esql.executeQueryAndPrintResult(query);	// Movies
 			
 			System.out.println("\n\n");	// space
@@ -1132,7 +1133,7 @@ public class Ticketmaster{
 			System.out.println("\n\n");	// space
 			
 			query = ("SELECT * FROM Plays WHERE sid = '" + sid_next + "';");
-			esql.executeQueryAndPrintResult(query);
+			esql.executeQueryAndPrintResult(query); */
 			
 			// Space
 			space();
@@ -1485,90 +1486,7 @@ public class Ticketmaster{
 		}
 		space();
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
 		// Variables
 		String query = "";
