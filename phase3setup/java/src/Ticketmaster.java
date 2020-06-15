@@ -783,8 +783,6 @@ public class Ticketmaster{
 			String email = "";
 			String first = "";
 			String last = "";
-			
-
 
 			// Initialize 'verify'
 			int verify = 0;
@@ -1130,156 +1128,132 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
+		// Variables
+		String email;
+		String query = "";
+				
+		// Initialize Scanner
+		Scanner scan = new Scanner(System.in);
+		clear();
 		
+		// Get user email
+		System.out.print("Please enter your account email to start: ");
+		email = scan.nextLine();
+		
+		try
+		{
+			// Verify that email exists in database
+			query = ("SELECT * FROM Users WHERE email = '" + email + "';");
+			esql.executeQuery(query);
+			
+			// Drop all tables
+			query = ("DROP VIEW IF EXISTS user_selected CASCADE;");
+			esql.executeUpdate(query);
+			
+			// Users X Bookings
+			query = ("CREATE VIEW user_selected AS SELECT b.bid, b.sid FROM Users AS u INNER JOIN Bookings AS b ON u.email = b.email WHERE u.email = '" + email + "';");
+			esql.executeUpdate(query);
+			
+			// user_selected X ShowSeats
+			query = ("CREATE VIEW got_csid AS SELECT us.sid, ss.csid, ss.bid, ss.price FROM user_selected AS us INNER JOIN ShowSeats AS ss ON us.sid = ss.sid;");
+			esql.executeUpdate(query);
+			
+			// got_csid X CinemaSeats
+			query = ("CREATE VIEW got_tid AS SELECT gc.csid, gc.sid, gc.bid, gc.price, cs.tid, cs.sno, cs.stype FROM got_csid AS gc INNER JOIN CinemaSeats AS cs ON gc.csid = cs.csid;");
+			esql.executeUpdate(query);
+			
+			// got_tid X Theaters
+			query = ("CREATE VIEW got_the AS SELECT gt.csid, gt.bid, gt.price, gt.sno, t.tname FROM got_tid AS gt INNER JOIN Theaters AS t ON gt.tid = t.tid;");
+			esql.executeUpdate(query);
+			
+			// Get the booking with a different seat in the same theater_name
+			query = ("SELECT DISTINCT * FROM got_the AS gt INNER JOIN got_the AS gtt ON gt.price = gtt.price and gt.tname = gtt.tname and gt.csid != gtt.csid and gt.bid > 0;");
+			List<List<String>> choices = esql.executeQueryAndReturnResult(query);
+			//System.out.println("Choices values: " + choices);
+			
+			// Display Menu options
+			clear();
+			System.out.println("*********************************************");
+			System.out.println("*        Seat changer in Same Theater       *");
+			System.out.println("*********************************************\n\n");
+			
+			System.out.println("|\tChoice\t|\t\tTheater name\t\t|\t\tOriginal Seat\t\t|\t\tNew Seat\t\t|\t\tPrice\t\t|\n");
+			
+			// Get number of returned rows
+			query = ("SELECT DISTINCT * FROM got_the AS gt INNER JOIN got_the AS gtt ON gt.price = gtt.price and gt.tname = gtt.tname and gt.csid != gtt.csid and gt.bid > 0;");
+			int ret_res = esql.executeQuery(query);
+			//System.out.println("Returned results (int): " + ret_res);
+			
+			// Run through options to change
+			for(int i = 0; i < choices.size(); i++)
+			{
+				List<String> List_item = choices.get(i);
+				
+				// Pull out key components
+				String price = List_item.get(2);
+				String og_seat = List_item.get(3);
+				String th_name = List_item.get(4);
+				String new_seat = List_item.get(8);
+				
+				System.out.print("|\t" + (i + 1) + "\t|\t\t" + th_name + "\t\t|\t\t" + og_seat + "\t\t|\t\t" + new_seat + "\t\t|\t\t" + price);
+			}
+			
+			// A little space
+			System.out.println("\n");
+			
+			// Allow for user choice
+			int user_choice = 0;
+			
+			while(user_choice > ret_res || user_choice < 1)
+			{
+				System.out.print("Which seat would you like to change (0 to cancel): ");
+				user_choice = Integer.parseInt(scan.nextLine());
+				
+				if(user_choice == 0)
+				{
+					break;
+				}
+			}
+			
+			if(user_choice != 0)
+			{
+				// Adjust choice for array
+				user_choice = (user_choice - 1);
+				
+				// Get array values
+				List<String> chosen_swap = choices.get(user_choice);
+				
+				// Get individual values
+				String bid = chosen_swap.get(1);
+				String csid_old = chosen_swap.get(0);
+				String csid_new = chosen_swap.get(5);
+				
+				//System.out.println("Chosen option: " + chosen_swap);
+				
+						// --- Swap the values ---
+				// Update New Seat with bid value
+				query = ("UPDATE ShowSeats SET bid = '" + bid + "' WHERE csid = '" + csid_new + "';");
+				esql.executeUpdate(query);
+				
+				// Remove the old bid value
+				query = ("UPDATE ShowSeats SET bid = Null WHERE csid = '" + csid_old + "';");
+				esql.executeUpdate(query);
+				
+				// Success message
+				clear();
+				System.out.println("Your seat has been successfully updated!");
+			}
+			
+		}
+		catch(Exception e)
+		{
+			System.out.println("An error has occurred: " + e);
+		}
+		space();
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void RemovePayment(Ticketmaster esql){//6
 		// Variables
 		String query = "";
@@ -1436,53 +1410,7 @@ public class Ticketmaster{
 			System.out.println("An error has occurred: " + e);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
 		// Variables
 		String rm_date = "";
@@ -1622,81 +1550,6 @@ public class Ticketmaster{
 		}
 		space();
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
 		// Variables
